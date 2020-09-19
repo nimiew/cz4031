@@ -1,4 +1,6 @@
 import copy # Using deepcopy, to enforce using write methods by client
+import collections
+
 from utils import *
 
 # Constants
@@ -24,8 +26,9 @@ class Disk:
     blocks = []
     for _ in range(NUM_BLOCKS):
         blocks.append(Block(BLOCK_SIZE))
-    next_free_block_id = 0
-    
+    next_free_idx = 0
+    non_full_data_idx_deque = collections.deque()
+
     @classmethod
     def read_block(cls, address):
         if not 0 <= address < NUM_BLOCKS:
@@ -37,13 +40,24 @@ class Disk:
         if not 0 <= address < NUM_BLOCKS:
             raise Exception(f"Invalid block id. Address must be within [0, {NUM_BLOCKS-1}]")
         cls.blocks[address] = block
-        
+
     @classmethod
-    def write_free_block(cls, block):
-        self.blocks[cls.next_free_block] = block
-        next_free_block += 1 
+    def get_next_free(cls):
+        cls.next_free_idx += 1
+        if cls.next_free_idx == NUM_BLOCKS:
+            raise Exception("Disk full")
+        return cls.next_free_idx - 1
+
+    @classmethod
+    def add_non_full_data_idx_deque(cls, idx):
+        cls.non_full_data_idx_deque.append(idx)
+
+    @classmethod
+    def get_non_full_data_idx(cls):
+        if cls.non_full_data_idx_deque:
+            return cls.non_full_data_idx_deque.popleft()
+        return cls.get_next_free()
 
     @classmethod
     def info(cls):
         return f"Disk size: {DISK_SIZE}, Block size: {BLOCK_SIZE}, No. blocks: {NUM_BLOCKS}"
-        

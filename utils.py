@@ -125,9 +125,9 @@ def insert_record_bytes(block, record_bytes, search_from=9):
     while pos_to_insert < len(block) and block.bytes[pos_to_insert] != 0:
         pos_to_insert += record_size
     if pos_to_insert + record_size > len(block):
-        return False
+        return -1
     block.bytes[pos_to_insert: pos_to_insert + record_size] = record_bytes
-    return True
+    return pos_to_insert + record_size
 
 def read_record_bytes(block, offset):
     if get_block_type(block) != "data":
