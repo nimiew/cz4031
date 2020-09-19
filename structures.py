@@ -10,7 +10,11 @@ NUM_BLOCKS = DISK_SIZE // BLOCK_SIZE
 class Block:
     def __init__(self, block_size=BLOCK_SIZE):
         self.bytes = bytearray(block_size)
-        
+        self.size = block_size
+    
+    def __len__(self):
+        return self.size
+
     def __repr__(self):
         return [value for value in self.bytes].__repr__()
 

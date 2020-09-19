@@ -37,6 +37,7 @@ Analysis of data.tsv (if interested, look at data_analysis.py)
 ## Record format
 
 10 bytes for tconst (fixed string of length 10), 4 bytes for averageRating (unsigned int), 4 bytes for numVotes
+
 Total 18 bytes for a record
 
 ## Block format
@@ -49,6 +50,7 @@ Total 18 bytes for a record
     - 4 bytes (for holding record length)
   - Data
     - 18n bytes (records)
+    - max n = 5
 
 - Index Block
 
