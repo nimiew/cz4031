@@ -92,3 +92,7 @@ Total 18 bytes for a record
 - What does a pointer contain?
   - 4 bytes for block_id and 4 bytes for offset if pointing to data block
   - 4 bytes for block_id if pointing to index block
+
+## Tests
+
+`python -m unittest`

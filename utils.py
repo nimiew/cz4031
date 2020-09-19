@@ -14,7 +14,7 @@ def convert_string_to_bytes(string, num_bytes=10):
     res = []
     for char in string:
         byte_value = ord(char)
-        if not 0 <= byte_value <= 255:
+        if not 1 <= byte_value <= 255:
             raise Exception(f"byte value: {byte_value} invalid")
         res.append(byte_value)
     res.extend([0 for _ in range(num_bytes - len(res))])
@@ -29,11 +29,18 @@ def convert_bytes_to_string(bytes_):
         res.append(chr(byte))
     return "".join(res)
 
-def convert_float_to_bytes(real):
+def convert_float_to_bytes(float_):
     # float => bytearray
-    before_dot, after_dot = str(real).split(".")
-    before_dot = int(before_dot).to_bytes(2, byteorder='little', signed=False)
-    after_dot = int(after_dot).to_bytes(2, byteorder='little', signed=False)
+    if float_ < 1.0:
+        raise Exception(f"float value must be >= 1.0")
+    before_dot, after_dot = str(float_).split(".")
+    before_dot, after_dot = int(before_dot), int(after_dot)
+    if before_dot > 65535:
+        raise Exception(f"before_dot > 65535")
+    if after_dot > 65535:
+        raise Exception(f"after_dot > 65535")
+    before_dot = before_dot.to_bytes(2, byteorder='little', signed=False)
+    after_dot = after_dot.to_bytes(2, byteorder='little', signed=False)
     return bytearray(before_dot + after_dot) # concat
 
 def convert_bytes_to_float(bytes_):
