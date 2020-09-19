@@ -20,8 +20,7 @@ def main():
         max_num_votes = max(max_num_votes, int(num_votes))
         min_num_votes = min(min_num_votes, int(num_votes))
         
-        before_dot, after_dot = average_rating.split(".")
-        assert len(before_dot) <= 2
+        _, after_dot = average_rating.split(".")
         assert len(after_dot) <= 2
         
         # just to check if we got any funny values

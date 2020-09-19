@@ -110,7 +110,7 @@ def get_index_block_header(block):
         convert_bytes_to_uint(block.bytes[13:17])
     )
 
-def insert_record(block, record_bytes, search_from=8):
+def insert_record_bytes(block, record_bytes, search_from=9):
     # insert the bytes of record into the first free location in data block
     # returns False if block is full and insertion is not done
     # return True if insertion is done
@@ -118,7 +118,9 @@ def insert_record(block, record_bytes, search_from=8):
         raise Exception("Can only insert record into data block!")
     _, block_id, record_size = get_data_block_header(block)
     if record_size != len(record_bytes):
-        raise Exception(f"Error: header record size: {record_size} != len(record_bytes): {len(record_bytes)}")
+        raise Exception(f"Header record size: {record_size} != len(record_bytes): {len(record_bytes)}")
+    if (search_from - 9) % record_size != 0:
+        raise Exception("search_from must satisfy 18x + 9")
     pos_to_insert = search_from
     while pos_to_insert < len(block) and block.bytes[pos_to_insert] != 0:
         pos_to_insert += record_size
@@ -126,3 +128,13 @@ def insert_record(block, record_bytes, search_from=8):
         return False
     block.bytes[pos_to_insert: pos_to_insert + record_size] = record_bytes
     return True
+
+def read_record_bytes(block, offset):
+    if get_block_type(block) != "data":
+        raise Exception("Can only read record from data block!")
+    _, block_id, record_size = get_data_block_header(block)
+    if (offset - 9) % record_size != 0:
+        raise Exception("offset must satisfy 18x + 9")
+    if (offset + record_size > len(block)):
+        raise Exception("offset is too big")
+    return block.bytes[offset: offset + record_size]

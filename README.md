@@ -1,4 +1,4 @@
-# CZ4031
+# Information
 
 #### Note: If experimenting with code on jupyter notebook, to prevent OOM, run with
 
@@ -11,7 +11,7 @@ jupyter notebook --NotbookApp.iopub_Data_Rate_Limit=1e10
   - In terms of packing fields into records
 
     - Since our data is static, we can use fixed format with fixed length
-    - I am not sure if we need record header
+    - Don't need record header
 
   - In terms of packing records into a block
 
@@ -22,7 +22,7 @@ jupyter notebook --NotbookApp.iopub_Data_Rate_Limit=1e10
 
 - Lecture 08: B+ Tree (2)
 
-## Data
+## Data Analysis
 
 Analysis of data.tsv (if interested, look at data_analysis.py)
 
@@ -32,7 +32,9 @@ Analysis of data.tsv (if interested, look at data_analysis.py)
 - max(averageRating) is 10.0 while min(averageRating) is 1.0
 - max(numVotes) is 2279223 while min(numVotes) is 5
 - Total number of records is 1070318
+- number of decimal places for averageRating < 2 (so decimal places can be represent with 2 bytes (up to 65536))
 - Means we can use fixed format with fixed length for record (10 bytes for tconst, 4 for averageRating and 4 for numVotes)
+- Fact: There are no records who start with 0 at position 0. This means we can use value of 0 to check if there is a record at a block offset
 
 ## Record format
 
