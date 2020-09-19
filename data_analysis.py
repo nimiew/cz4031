@@ -6,12 +6,13 @@ def main():
     print(f"columns: {lines[0].split()}")
     print(f"first row: {lines[1].split()}")
 
-    max_tconst_len = -1
-    max_average_rating = -1
+    max_tconst_len = float("-inf")
+    max_average_rating = float("-inf")
     min_average_rating = float('inf')
-    max_num_votes = -1
+    max_num_votes = float("-inf")
     min_num_votes = float("inf")
 
+    # loop through all the data rows
     for line in lines[1:]:
         tconst, average_rating, num_votes = line.split()
         max_tconst_len = max(max_tconst_len, len(tconst))
@@ -21,7 +22,7 @@ def main():
         min_num_votes = min(min_num_votes, int(num_votes))
         
         _, after_dot = average_rating.split(".")
-        assert len(after_dot) <= 2
+        assert int(after_dot) <= 2 ** 16 - 1
         
         # just to check if we got any funny values
         assert float(average_rating) > 0

@@ -1,5 +1,7 @@
 # Information
 
+#### Requirements: Python 3.6+
+
 #### Note: If experimenting with code on jupyter notebook, to prevent OOM, run with
 
 jupyter notebook --NotbookApp.iopub_Data_Rate_Limit=1e10
@@ -24,7 +26,7 @@ jupyter notebook --NotbookApp.iopub_Data_Rate_Limit=1e10
 
 ## Data Analysis
 
-Analysis of data.tsv (if interested, look at data_analysis.py)
+Analysis of data.tsv (if interested, look at data_analysis.py and run `python data_analysis.py`)
 
 - First row in file is the columns (tconst, averageRating, numVotes)
 - Second to last rows are data rows, 1 row == 1 record
