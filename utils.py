@@ -29,11 +29,11 @@ def convert_bytes_to_string(bytes_):
         res.append(chr(byte))
     return "".join(res)
 
-def convert_number_to_bytes(number):
+def convert_uint_to_bytes(number):
     # int => bytearray
     return bytearray(number.to_bytes(4, byteorder='little', signed=False))
 
-def convert_bytes_to_number(bytes_):
+def convert_bytes_to_uint(bytes_):
     # bytearray => int
     return int.from_bytes(bytes_, byteorder='little', signed=False)
 
@@ -53,24 +53,39 @@ def convert_bytes_to_float(bytes_):
 def is_index_block(block):
     return block.bytes[0] == 1
 
-# Bytes reserved for data block header = 8
-def set_data_block_header(block, block_id, record_size):
+# Bytes reserved for data block header = 9
+def set_data_block_header(block, block_id, record_size=18):
     # set a data block's header based on block_id and record_size
-    block.bytes[1:5] = convert_uint_to_bytes(block_id, 4)
-    block.bytes[5:9] = convert_uint_to_bytes(record_size, 4)
+    block.bytes[0] = 0
+    block.bytes[1:5] = convert_uint_to_bytes(block_id)
+    block.bytes[5:9] = convert_uint_to_bytes(record_size)
     
 def get_data_block_header(block):
     # returns the block_id and record_size for a data block
     return convert_bytes_to_uint(block.bytes[1:5]), convert_bytes_to_uint(block.bytes[5:9])
 
 # Bytes reserved for index block header = 17
-def set_index_block_header(block, block_id, pointer_size, key_size, index_type):
+def set_index_block_header(block, block_id, parent_block_id, index_type, pointer_size=8, key_size=4):
     # set a index block's header based on block_id, pointer_length and key_size
-    block.bytes[0] = 1
-    block.bytes[1:5] = convert_uint_to_bytes(block_id, 4)
-    block.bytes[5:9] = convert_uint_to_bytes(pointer_size, 4)
-    block.bytes[9:13] = convert_uint_to_bytes(key_size, 4)
+    if index_type == "root":
+        block.bytes[0] = 1
+    elif index_type == "non-leaf":
+        block.bytes[0] = 2
+    elif index_type == "leaf":
+        block.bytes[0] = 3
+    else:
+        raise Exception(f"Invalid index_type: {index_type}")
+    block.bytes[1:5] = convert_uint_to_bytes(block_id)
+    block.bytes[5:9] = convert_uint_to_bytes(parent_block_id)
+    block.bytes[9:13] = convert_uint_to_bytes(pointer_size)
+    block.bytes[13:17] = convert_uint_to_bytes(key_size)
     
 def get_index_block_header(block):
-    # returns the block_id, pointer_size and key_size for an index block
-    return convert_bytes_to_uint(block.bytes[1:5]), convert_bytes_to_uint(block.bytes[5:9]), convert_bytes_to_uint(block.bytes[9:13])
+    # returns the index_block_type, block_id, parent_block_id, pointer_size and key_size for an index block
+    return (
+        block.bytes[0],
+        convert_bytes_to_uint(block.bytes[1:5]),
+        convert_bytes_to_uint(block.bytes[5:9]),
+        convert_bytes_to_uint(block.bytes[9:13]),
+        convert_bytes_to_uint(block.bytes[13:17])
+    )

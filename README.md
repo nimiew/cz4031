@@ -51,6 +51,7 @@ Total 18 bytes for a record
     - 18n bytes (records)
 
 - Index Block
+
   - Header
     - 1 byte (for denoting if block is data/index_root/index_non_leaf/index_leaf)
     - 4 bytes (for holding block id)

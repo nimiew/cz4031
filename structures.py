@@ -8,14 +8,8 @@ DISK_SIZE = 100 * 1024 * 1024
 NUM_BLOCKS = DISK_SIZE // BLOCK_SIZE
 
 class Block:
-    def __init__(self, block_size):
+    def __init__(self, block_size=BLOCK_SIZE):
         self.bytes = bytearray(block_size)
-    
-    def read_bytes(self):
-        return copy.deepcopy(self.bytes)
-    
-    def write_bytes(self, bytes_):
-        self.bytes = bytes_
         
     def __repr__(self):
         return [value for value in self.bytes].__repr__()
