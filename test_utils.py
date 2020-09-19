@@ -123,7 +123,5 @@ class TestUtils(unittest.TestCase):
         while next_pos != -1:
             num_records_written_to_block += 1
             next_pos = insert_record_bytes(test_block, record_bytes)
-        # 91 // 18 = 5 records should be stored in data block
-        self.assertEqual(num_records_written_to_block, 5)
-        self.assertEqual(next_pos, 99)
+        self.assertEqual(num_records_written_to_block, (len(test_block)-9) // 18)
         # TODO: write test for exceptions
