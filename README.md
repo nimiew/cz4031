@@ -24,7 +24,7 @@ jupyter notebook --NotbookApp.iopub_Data_Rate_Limit=1e10
 
 ## Data
 
-Analysis of data.tsv (if interested, look at Data.ipynb)
+Analysis of data.tsv (if interested, look at data_analysis.py)
 
 - First row in file is the columns (tconst, averageRating, numVotes)
 - Second to last rows are data rows, 1 row == 1 record
