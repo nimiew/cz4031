@@ -78,8 +78,8 @@ Total 18 bytes for a record
   - e.g. 1000 <=> [232, 2, 0, 0]
 - For strings, convert each char to ascii value, pad write with zeros (10 bytes per string)
   - e.g. "adke" <=> [115, 100, 97, 101, 0, 0, 0, 0, 0, 0]
-- For floats, represent each float as 2 integers (2 bytes before dot and 2 bytes after dot)
-  - We can do this as I checked that before the dot at most 2 digits and after the dot got at most 2 digits
+- Represent each float as 2 integers (2 bytes before dot and 2 bytes after dot)
+  - We can do this as I checked that before the dot got at most 2 digits and after the dot got at most 2 digits (see data_analysis.py)
   - Also all are positive
   - e.g. 5.3 <=> [5, 0, 3, 0], 11.42 <=> [11, 0, 42, 0]
 - What does a pointer contain?
