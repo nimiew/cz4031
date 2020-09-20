@@ -15,7 +15,7 @@ jupyter notebook --NotbookApp.iopub_Data_Rate_Limit=1e10
     - Since our data is static, we can use fixed format with fixed length
     - Don't need record header
 
-  - In terms of packing records into a block
+  - In terms of packing records into a data block
 
     - I suggest we go with unspanned method
     - Sequencing should be done for averageRating as all queries are on averageRating (we can just sort the data before inserting into db)
@@ -52,9 +52,10 @@ Total 18 bytes for a record
     - 1 byte (for denoting if block is data/index_root/index_non_leaf/index_leaf)
     - 4 bytes (for holding block id)
     - 4 bytes (for holding record length)
+    - 4 bytes (next free offset)
   - Data
     - 18n bytes (records)
-    - max n = 5
+    - max n = 4
 
 - Index Block
 
@@ -62,7 +63,7 @@ Total 18 bytes for a record
     - 1 byte (for denoting if block is data/index_root/index_non_leaf/index_leaf)
     - 4 bytes (for holding block id)
     - 4 bytes (for holding parent block id)
-    - 4 bytes (for holding point size) (denote this as k)
+    - 4 bytes (for holding pointer size) (denote this as k)
     - 4 bytes (for holding key size) (denote this as p)
   - Key length is 4 as averageRating need 4 bytes
   - Pointer length is 8 as we need 4 bytes for next_block_id and 4 bytes for block offset (dense mapping!)

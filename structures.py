@@ -3,7 +3,7 @@ import collections
 
 from utils import *
 
-# constants
+# constants (bytes)
 RECORD_SIZE = 18
 BLOCK_SIZE = 100
 DISK_SIZE = 100 * 1024 * 1024
@@ -110,7 +110,7 @@ class BPTreeNode:
             self.right_pointer = None
 
     def add(self, data_block_id, offset, key):
-        if self.index_type == "child":
+        if self.index_type == "leaf":
             for i, k in enumerate(self.keys):
                 if key < k:
                     self.keys.insert(key)

@@ -83,62 +83,60 @@ class TestUtils(unittest.TestCase):
         test_block = Block()
         set_data_block_header(test_block, 23)
         self.assertEqual(get_block_type(test_block), "data")
-        self.assertEqual(get_data_block_header(test_block), (0, 23, 18))
+        self.assertEqual(get_data_block_header(test_block), (0, 23, 13, 18))
 
         test_block = Block()
         set_data_block_header(test_block, 99, 30)
         self.assertEqual(get_block_type(test_block), "data")
-        self.assertEqual(get_data_block_header(test_block), (0, 99, 30))
+        self.assertEqual(get_data_block_header(test_block), (0, 99, 30, 18))
 
     def test_index_block_header_setter_and_setter(self):
         test_block = Block()
-        set_index_block_header(test_block, "root", 5, 9)
+        set_index_block_header(test_block, "root", 5, 9, 0)
         self.assertEqual(get_block_type(test_block), "root")
-        self.assertEqual(get_index_block_header(test_block), (1, 5, 9, 8, 4))
+        self.assertEqual(get_index_block_header(test_block), (1, 5, 9, 0, 8, 4))
 
         test_block = Block()
         set_index_block_header(test_block, "non-leaf", 7, 45, 11)
         self.assertEqual(get_block_type(test_block), "non-leaf")
-        self.assertEqual(get_index_block_header(test_block), (2, 7, 45, 11, 4))
+        self.assertEqual(get_index_block_header(test_block), (2, 7, 45, 11, 8, 4))
 
         test_block = Block()
         set_index_block_header(test_block, "leaf", 23, 75, 23, 24)
         self.assertEqual(get_block_type(test_block), "leaf")
-        self.assertEqual(get_index_block_header(test_block), (3, 23, 75, 23, 24))
+        self.assertEqual(get_index_block_header(test_block), (3, 23, 75, 23, 24, 4))
 
     def test_insert_and_read_record_bytes(self):
         test_block = Block()
         set_data_block_header(test_block, 23)
         record = ["abc", 2.5, 23]
         record_bytes = convert_record_to_bytes(record)
-        # next_pos to write should be 9 + 18 = 27
-        next_pos = insert_record_bytes(test_block, record_bytes)
-        self.assertEqual(next_pos, 27)
-        # first record will be at position 9 as header has 9 bytes
-        self.assertEqual(read_record_bytes(test_block, 9), record_bytes)
+        self.assertEqual(insert_record_bytes(test_block, record_bytes), 13)
+        # first record will be at position 13 as header has 13 bytes
+        self.assertEqual(read_record_bytes(test_block, 13), record_bytes)
         # header should be unchanged
         self.assertEqual(get_block_type(test_block), "data")
-        self.assertEqual(get_data_block_header(test_block), (0, 23, 18))
-        num_records_written_to_block = 0
-        while next_pos != -1:
+        # next free shud be 13 + 18 = 31
+        self.assertEqual(get_data_block_header(test_block), (0, 23, 31, 18))
+        num_records_written_to_block = 1
+        while insert_record_bytes(test_block, record_bytes) != -1:
             num_records_written_to_block += 1
-            next_pos = insert_record_bytes(test_block, record_bytes)
-        self.assertEqual(num_records_written_to_block, (len(test_block)-9) // 18)
+        self.assertEqual(num_records_written_to_block, (len(test_block)-13) // 18)
         # TODO: write test for exceptions
 
     def test_serialize_and_deserialize_index_block(self):
         test_block = Block()
         set_index_block_header(test_block, "root", 5, 9)
-        self.assertEqual(deserialize_index_block(test_block), ([], []))
+        self.assertEqual(deserialize_index_block(test_block), ([(0, 0)], []))
         
         # note: pointer is (block_id, offset)
-        pointers = [(4, 0), (34, 4), (9, 10)]
+        pointers = [(4, 0), (34, 4), (9, 10), (0, 0)]
         keys = [5, 4, 5]
         keys_pointers_bytes = serialize_ptrs_keys(pointers, keys)
-        set_ptrs_keys_bytes(test_block, keys_pointers_bytes)
+        self.assertTrue(set_ptrs_keys_bytes(test_block, keys_pointers_bytes))
         self.assertEqual(deserialize_index_block(test_block), (pointers, keys))
 
-        pointers = [(5, 3)]
+        pointers = [(5, 3), (0, 0)]
         keys = [5]
         keys_pointers_bytes = serialize_ptrs_keys(pointers, keys)
         set_ptrs_keys_bytes(test_block, keys_pointers_bytes)
