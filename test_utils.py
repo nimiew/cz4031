@@ -125,3 +125,22 @@ class TestUtils(unittest.TestCase):
             next_pos = insert_record_bytes(test_block, record_bytes)
         self.assertEqual(num_records_written_to_block, (len(test_block)-9) // 18)
         # TODO: write test for exceptions
+
+    def test_serialize_and_deserialize_index_block(self):
+        test_block = Block()
+        set_index_block_header(test_block, "root", 5, 9)
+        self.assertEqual(deserialize_index_block(test_block), ([], []))
+        
+        # note: pointer is (block_id, offset)
+        pointers = [(4, 0), (34, 4), (9, 10)]
+        keys = [5, 4, 5]
+        keys_pointers_bytes = serialize_ptrs_keys(pointers, keys)
+        set_ptrs_keys_bytes(test_block, keys_pointers_bytes)
+        self.assertEqual(deserialize_index_block(test_block), (pointers, keys))
+
+        pointers = [(5, 3)]
+        keys = [5]
+        keys_pointers_bytes = serialize_ptrs_keys(pointers, keys)
+        set_ptrs_keys_bytes(test_block, keys_pointers_bytes)
+        self.assertEqual(deserialize_index_block(test_block), (pointers, keys))
+        # TODO: write test for exceptions

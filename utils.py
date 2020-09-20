@@ -149,14 +149,14 @@ def read_record_bytes(block, offset):
         raise Exception("offset is too big")
     return block.bytes[offset: offset + record_size]
 
-def set_key_pointers_bytes(block, key_pointers_bytes):
+def set_ptrs_keys_bytes(block, ptrs_keys_bytes):
     # sets the data (keys and pointers) into index block (after the header)
     if get_block_type(block) == "data":
         raise Exception("Can only set key_pointers_bytes for index block!")
 
-    block.bytes[17:17+len(key_pointers_bytes)] = key_pointers_bytes
+    block.bytes[17:17+len(ptrs_keys_bytes)] = ptrs_keys_bytes
     # clear out the remainder
-    block.bytes[17+len(key_pointers_bytes): len(block.bytes)] = [0] * (len(key_pointers_bytes) - (17 + len(key_pointers_bytes)))
+    block.bytes[17+len(ptrs_keys_bytes): len(block)] = bytearray(len(block) - (17 + len(ptrs_keys_bytes)))
 
 def deserialize_index_block(block):
     # convert the data (keys and pointers) in a index block
@@ -170,6 +170,10 @@ def deserialize_index_block(block):
     while True:
         if pos >= len(block) or block.bytes[pos] == 0:
             break
+        keys.append(convert_bytes_to_uint(block.bytes[pos:pos+key_size]))
+        pos += key_size
+        if pos >= len(block) or block.bytes[pos] == 0:
+            break
         # recall that pointer first 4 bytes is block_id, next 4 is offset
         # offset is 0 if pointing to another index block
         # if pointing to data block, read_record_byes(block_id, offset) can be used later to retrive the record bytes
@@ -177,19 +181,15 @@ def deserialize_index_block(block):
         pointer_offset = convert_bytes_to_uint(block.bytes[pos+pointer_size//2:pos+pointer_size])
         pointers.append((pointer_block_id, pointer_offset))
         pos += pointer_size
-        if pos >= len(block) or block.bytes[pos] == 0:
-            break
-        keys.append(convert_bytes_to_uint(block.bytes[pos:pos+key_size]))
-        pos += key_size
     return pointers, keys
 
-def serialize_index_block(pointers, keys):
-    # converts list[tuple(block_id, offset), key] into bytes, to be used with set_key_pointers_bytes(block, key_pointers_bytes)
+def serialize_ptrs_keys(pointers, keys):
+    # converts list[tuple(block_id, offset), key] into bytes, to be used with set_ptrs_keys_bytes(block, key_pointers_bytes)
     if not 0 <= len(pointers) - len(keys) <= 1:
         raise Exception(f"Invalid length of pointers and keys: len(pointers): {pointers}, len(keys): {keys}")
     res = bytearray()
     for i in range(len(keys)):
-        res += convert_uint_to_bytes(pointers[i][0]) + convert_uint_to_bytes(pointers[i][1]) + convert_uint_to_bytes(keys[i])
+        res += convert_uint_to_bytes(keys[i]) + convert_uint_to_bytes(pointers[i][0]) + convert_uint_to_bytes(pointers[i][1])
     if len(pointers) > len(keys):
         res += convert_uint_to_bytes(pointers[i][0]) + convert_uint_to_bytes(pointers[i][1])
     return res

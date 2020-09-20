@@ -16,7 +16,8 @@ def main():
     block_size = len(root_block)
 
     # initialize index block 
-    set_index_block_header(root_block, "root", root_id, root_id)
+    set_index_block_header(root_block, "leaf", root_id, root_id)
+    root_node = BPTreeNode(root_block)
 
     # load next free block
     data_id = Disk.get_next_free()
@@ -42,7 +43,8 @@ def main():
         # write to disk for every record insertion
         Disk.write_block(data_id, data_block)
         search_from = next_pos
-        # TODO: insert to B+ Tree
+        # insert to B+ Tree
+        root_node.add(data_id, next_pos - 18, record[1])
     print(f"Number of data_blocks written to {data_id}")
 
     # TODO: Experiments

@@ -25,7 +25,8 @@ class Disk:
     for _ in range(NUM_BLOCKS):
         blocks.append(Block())
     # the idx of the next completely free block
-    next_free_idx = 0
+    # now got problem, if block_id is 0, then pointer will be 0 then some code will break
+    next_free_idx = 1
     # contains data blocks that are not full
     non_full_data_idx_deque = collections.deque()
 
@@ -65,7 +66,13 @@ class Disk:
         return f"Disk size: {DISK_SIZE}, Block size: {BLOCK_SIZE}, No. blocks: {NUM_BLOCKS}"
 
 class BPTreeNode:
-    def __init__(self, block):
+    def __init__(self, block=None, parent_id=None):
+        if block == None:
+            if parent_id == None:
+                raise Exception("Cannot block and parent_id both None")
+            block_id = Disk.get_next_free()
+            block = Disk.read_block(block_id)
+            set_index_block_header(root_block, "leaf", block_id, parent_id)
         if get_block_type(block) == "data":
             raise Exception("Block type must be index and not data!")
         self.block = block
