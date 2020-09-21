@@ -39,8 +39,8 @@ def main():
             assert inserted_at != -1
         # write to disk for every record insertion
         Disk.write_block(data_id, data_block)
-        # insert to B+ Tree
-        # root_node.add(data_id, next_pos - 18, record[1])
+        # insert to B+ Tree (block_id, offset, key)
+        root_node.add(data_id, inserted_at, record[1])
     print(f"Number of data_blocks written to {data_id}")
 
     # TODO: Experiments

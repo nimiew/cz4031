@@ -67,6 +67,8 @@ class Disk:
 
 class BPTreeNode:
     def __init__(self, block=None, parent_id=None):
+        # if no block is provided, need to allocate a block (parent_id needed)
+        # if block is provided, the Node simply wraps around this block by parsing its data
         if block == None:
             if parent_id == None:
                 raise Exception("Cannot block and parent_id both None")
@@ -83,11 +85,10 @@ class BPTreeNode:
         self.key_size = None
         self.pointers = []
         self.keys = []
-        self.right_neighbor = None
         self.populate_fields()
 
     def populate_fields(self):
-        index_type, block_id, parent_block_id, pointer_length, key_size = get_index_block_header(self.block)
+        index_type, block_id, parent_block_id, num_keys, pointer_length, key_size = get_index_block_header(self.block)
         self.index_type = get_block_type(block)
         self.block_id = block_id
         self.parent_block_id = parent_block_id
@@ -98,16 +99,11 @@ class BPTreeNode:
         if self.parent_block_id == None: raise Exception("parent_block_id is None")
         if self.pointer_length == None: raise Exception("pointer_length is None")
         if self.key_size == None: raise Exception("key_size is None")
-        self.max_key_size = (len(self.block) - 17 - self.pointer_length) // (self.pointer_length + self.key_size)
+        self.max_key_size = (len(self.block) - 21 - self.pointer_length) // (self.pointer_length + self.key_size)
         pointers, keys = deserialize_index_block(self.block)
-        if len(pointers) > len(keys):
-            self.pointers = pointers[:-1]
-            self.keys = keys
-            self.right_pointer = pointers[-1]
-        else:
-            self.pointers = pointers
-            self.keys = keys
-            self.right_pointer = None
+        assert num_keys == len(keys)
+        self.pointers = pointers
+        self.keys = keys
 
     def add(self, data_block_id, offset, key):
         if self.index_type == "leaf":
@@ -125,12 +121,23 @@ class BPTreeNode:
         else:
             for i, k in enumerate(self.keys):
                 if key < k:
-                    child_index_node = BPTreeNode(Disk.read(self.pointers[i][0]))
-                    child_index_node.add(data_block_id, offset, key)
+                    child_block = Disk.read(self.pointers[i][0]) # should have been created
+                    child_node = BPTreeNode(child_block) # populate the node
+                    child_node.add(data_block_id, offset, key) # call add on the child node
                 elif i + 1 == len(self.keys):
-                    if self.right_pointer == None:
+                    if self.pointers[-1][0] == 0:
                         raise Exception("Something went wrong")
-                    child_index_node = BPTreeNode(Disk.read(self.right_pointer[0]))
+                    child_block = Disk.read(self.pointers[-1][0]) # should have been created
+                    child_node = BPTreeNode(child_block) # populate the node
+                    child_node.add(data_block_id, offset, key) # call add on the child node
 
     def split(self):
-        pass
+        mid = (self.max_key_size + 1) // 2 # prefer to give left more
+        left, right = BPTreeNode(self.block_id), BPTreeNode(self.block_id)
+        left.keys = self.keys[:mid]
+        left.pointers = self.pointers[:mid]
+        right.keys = self.keys[mid:]
+        right.pointers = self.pointers[mid:]
+        self.keys = [right.keys[0]]
+        self.pointers = [(left.block_id, 0), (right.block_id, 0)]
+        self.index_type = "non_leaf"
