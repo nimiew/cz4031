@@ -15,7 +15,9 @@ def main():
     set_data_block_header(data_block, data_id)
     
     # insert the data
-    for record in data:
+    for i, record in enumerate(data):
+        if i != 0 and i % 50000 == 0:
+            print(f"{i} records inserted")
         record_bytes = convert_record_to_bytes(record)
         # insert into data block
         inserted_at = insert_record_bytes(data_block, record_bytes)

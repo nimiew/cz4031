@@ -100,8 +100,7 @@ def get_data_block_header(block):
     )
 
 # bytes reserved for index block header = 13
-def set_index_block_header(block, index_type, block_id, num_keys=0, key_size=13):
-    # set a index block's header: index_type, block_id, num_keys, key_size
+def set_index_block_header(block, index_type, block_id, parent_block_id, num_keys=0, key_size=13):
     if index_type == "root":
         block.bytes[0] = 1
     elif index_type == "non-leaf":
@@ -111,16 +110,17 @@ def set_index_block_header(block, index_type, block_id, num_keys=0, key_size=13)
     else:
         raise Exception(f"Invalid index_type: {index_type}")
     block.bytes[1:5] = convert_uint_to_bytes(block_id)
-    block.bytes[5:9] = convert_uint_to_bytes(num_keys)
-    block.bytes[9:13] = convert_uint_to_bytes(key_size)
+    block.bytes[5:9] = convert_uint_to_bytes(parent_block_id)
+    block.bytes[9:13] = convert_uint_to_bytes(num_keys)
+    block.bytes[13:17] = convert_uint_to_bytes(key_size)
     
 def get_index_block_header(block):
-    # return a index block's header: index_type, block_id, num_keys, key_size
     return (
         block.bytes[0],
         convert_bytes_to_uint(block.bytes[1:5]),
         convert_bytes_to_uint(block.bytes[5:9]),
-        convert_bytes_to_uint(block.bytes[9:13])
+        convert_bytes_to_uint(block.bytes[9:13]),
+        convert_bytes_to_uint(block.bytes[13:17])
     )
 
 def insert_record_bytes(block, record_bytes):
@@ -173,14 +173,14 @@ def set_ptrs_keys_bytes(block, ptrs_keys_bytes):
     # return True if setting is successful
     if get_block_type(block) == "data":
         raise Exception("Can only set key_pointers_bytes for index block!")
-    if 13 + len(ptrs_keys_bytes) > len(block):
+    if 17 + len(ptrs_keys_bytes) > len(block):
         return False
-    block.bytes[13:13+len(ptrs_keys_bytes)] = ptrs_keys_bytes
+    block.bytes[17:17+len(ptrs_keys_bytes)] = ptrs_keys_bytes
     # clear out the remainder
-    block.bytes[13+len(ptrs_keys_bytes): len(block)] = bytearray(len(block) - (13 + len(ptrs_keys_bytes)))
+    block.bytes[17+len(ptrs_keys_bytes): len(block)] = bytearray(len(block) - (17 + len(ptrs_keys_bytes)))
     num_keys = (len(ptrs_keys_bytes) - 8) // 21
     # set the number of keys
-    block.bytes[5:9] = convert_uint_to_bytes(num_keys)
+    block.bytes[9:13] = convert_uint_to_bytes(num_keys)
     return True
 
 def deserialize_index_block(block):
@@ -188,9 +188,9 @@ def deserialize_index_block(block):
     # returns list[block_id], list[key]
     if get_block_type(block) == "data":
         raise Exception("Can only deserialize index block!")
-    index_type, _, num_keys, key_size = get_index_block_header(block)
+    index_type, _, _, num_keys, key_size = get_index_block_header(block)
     
-    pos = 13
+    pos = 17
     pointers = []
     keys = []
     for i in range(num_keys):

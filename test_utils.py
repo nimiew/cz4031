@@ -94,17 +94,17 @@ class TestUtils(unittest.TestCase):
         test_block = Block()
         set_index_block_header(test_block, "root", 5, 9, 1)
         self.assertEqual(get_block_type(test_block), "root")
-        self.assertEqual(get_index_block_header(test_block), (1, 5, 9, 1))
+        self.assertEqual(get_index_block_header(test_block), (1, 5, 9, 1, 13))
 
         test_block = Block()
         set_index_block_header(test_block, "non-leaf", 7, 45, 11)
         self.assertEqual(get_block_type(test_block), "non-leaf")
-        self.assertEqual(get_index_block_header(test_block), (2, 7, 45, 11))
+        self.assertEqual(get_index_block_header(test_block), (2, 7, 45, 11, 13))
 
         test_block = Block()
         set_index_block_header(test_block, "leaf", 23, 75, 23)
         self.assertEqual(get_block_type(test_block), "leaf")
-        self.assertEqual(get_index_block_header(test_block), (3, 23, 75, 23))
+        self.assertEqual(get_index_block_header(test_block), (3, 23, 75, 23, 13))
 
     def test_insert_and_read_record_bytes(self):
         test_block = Block()

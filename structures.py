@@ -27,7 +27,7 @@ class Disk:
     blocks = []
     for _ in range(NUM_BLOCKS):
         blocks.append(Block())
-    next_free_idx = 0    
+    next_free_idx = 1 # 0 is never used  
     free_queue = collections.deque()
 
     @classmethod

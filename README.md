@@ -62,15 +62,16 @@ Total 18 bytes for a record
   - Header
     - 1 byte (for denoting if block is data/index_root/index_non_leaf/index_leaf)
     - 4 bytes (for holding block id)
+    - 4 bytes (for holding parent block id)
     - 4 bytes (for holding key size)
     - 4 bytes (for holding number of keys currently in index_block)
     - Key size for our case is 13 as we are using str(average_rating) + tconst as key
   - Data
     - 13n bytes (keys) + 8(n+1) bytes (pointers) (pointer has block_id + offset)
-    - Each index block can hold at most (block_size - 13) // 8 keys
-      - block_size - 13 >= 13n + 8(n+1)
-      - block_size - 21 >= 21n
-      - (block_size - 21) / 21 >= n
+    - Each index block can hold at most (block_size - 17) // 8 keys
+      - block_size - 17 >= 13n + 8(n+1)
+      - block_size - 25 >= 21n
+      - (block_size - 25) / 21 >= n
 
 ## Implementation
 
