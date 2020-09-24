@@ -51,12 +51,11 @@ Total 18 bytes for a record
   - Header
     - 1 byte (for denoting if block is data/index_root/index_non_leaf/index_leaf)
     - 4 bytes (for holding block id)
-    - 4 bytes (for holding record length)
     - 4 bytes (next free offset)
-    - 4 bytes (next block id)
+    - 4 bytes (for holding record size)
   - Data
     - 18n bytes (records)
-    - Each data block can hold at most (block_size - 17) // 18 records
+    - Each data block can hold at most (block_size - 13) // 18 records
 
 - Index Block
 
@@ -65,13 +64,13 @@ Total 18 bytes for a record
     - 4 bytes (for holding block id)
     - 4 bytes (for holding key size)
     - 4 bytes (for holding number of keys currently in index_block)
-    - Key size for our case is 4 as averageRating need 4 bytes
+    - Key size for our case is 13 as we are using str(average_rating) + tconst as key
   - Data
-    - 4n bytes (keys) + 4(n+1) bytes (pointers)
-    - Each index block can hold at most (block_size - 17) // 8 keys
-      - block_size - 13 >= 4n + 4(n+1)
-      - block_size - 17 >= 8n
-      - (block_size - 17) / 8 >= n
+    - 13n bytes (keys) + 8(n+1) bytes (pointers) (pointer has block_id + offset)
+    - Each index block can hold at most (block_size - 13) // 8 keys
+      - block_size - 13 >= 13n + 8(n+1)
+      - block_size - 21 >= 21n
+      - (block_size - 21) / 21 >= n
 
 ## Implementation
 
@@ -89,7 +88,7 @@ Total 18 bytes for a record
   - e.g. 5.3 <=> [5, 0, 3, 0], 11.42 <=> [11, 0, 42, 0]
 - By default, block id 0 refers to root index block
 - Index blocks have pointers that point to index blocks. All index block pointers point to other index blocks except leaf index blocks which point to data blocks
-- Data blocks contain records and a pointer in their header. If data block is full, its pointer will be non-zero and points to another data block. All data blocks in the same chain hold records with the same index key
+- Data blocks contain records
 - The conversion between 0 and None is the responsibility of class, not serializer/deserializer
 
 ## Tests

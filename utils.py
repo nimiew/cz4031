@@ -7,7 +7,7 @@ def parse_data(path="data.tsv"):
         record[2] = int(record[2])
     return data
 
-def convert_string_to_bytes(string, num_bytes=10):
+def convert_string_to_bytes(string, num_bytes):
     # string => bytearray
     if len(string) > num_bytes:
         raise Exception(f"string length: {len(string)} exceeds num_bytes: {num_bytes}")
@@ -63,7 +63,7 @@ def convert_bytes_to_uint(bytes_):
 
 def convert_record_to_bytes(record):
     # (string, float, int) => bytearray
-    return convert_string_to_bytes(record[0]) + convert_float_to_bytes(record[1]) + convert_uint_to_bytes(record[2])
+    return convert_string_to_bytes(record[0], 10) + convert_float_to_bytes(record[1]) + convert_uint_to_bytes(record[2])
 
 def convert_bytes_to_record(bytes_):
     # bytearray => (string, float, int)
@@ -82,27 +82,25 @@ def get_block_type(block):
     else:
         raise Exception(f"Block type unknown! byte at position 0 is {block.bytes[0]}") 
 
-# bytes reserved for data block header = 17
-def set_data_block_header(block, block_id, next_block_id=0, next_free_offset=17, record_size=18):
-    # set a data block's header: block_id, next_block_id, next_free_offset, record_size
+# bytes reserved for data block header = 13
+def set_data_block_header(block, block_id, next_free_offset=13, record_size=18):
+    # set a data block's header: block_id, next_free_offset, record_size
     block.bytes[0] = 0
     block.bytes[1:5] = convert_uint_to_bytes(block_id)
-    block.bytes[5:9] = convert_uint_to_bytes(next_block_id)
-    block.bytes[9:13] = convert_uint_to_bytes(next_free_offset)
-    block.bytes[13:17] = convert_uint_to_bytes(record_size)
+    block.bytes[5:9] = convert_uint_to_bytes(next_free_offset)
+    block.bytes[9:13] = convert_uint_to_bytes(record_size)
     
 def get_data_block_header(block):
-    # return a data block's header: block_id, next_block_id, next_free_offset, record_size
+    # return a data block's header: block_id, next_free_offset, record_size
     return (
         block.bytes[0],
         convert_bytes_to_uint(block.bytes[1:5]),
         convert_bytes_to_uint(block.bytes[5:9]),
         convert_bytes_to_uint(block.bytes[9:13]),
-        convert_bytes_to_uint(block.bytes[13:17])
     )
 
-# bytes reserved for index block header = 9
-def set_index_block_header(block, index_type, block_id, num_keys=0, key_size=4):
+# bytes reserved for index block header = 13
+def set_index_block_header(block, index_type, block_id, num_keys=0, key_size=13):
     # set a index block's header: index_type, block_id, num_keys, key_size
     if index_type == "root":
         block.bytes[0] = 1
@@ -131,30 +129,43 @@ def insert_record_bytes(block, record_bytes):
     # return True if insertion is successful
     if get_block_type(block) != "data":
         raise Exception("Can only insert record into data block!")
-    _, block_id, next_block_id, next_free_offset, record_size = get_data_block_header(block)
+    _, block_id, next_free_offset, record_size = get_data_block_header(block)
     if record_size != len(record_bytes):
         raise Exception(f"Header record size: {record_size} != len(record_bytes): {len(record_bytes)}")
-    if (next_free_offset - 17) % record_size != 0:
-        raise Exception(f"next_free_offset must satisfy {record_size}x + 17")
+    if (next_free_offset - 13) % record_size != 0:
+        raise Exception(f"next_free_offset must satisfy {record_size}x + 13")
     if next_free_offset + record_size > len(block):
-        return False
+        return -1
     # set the bytes
     block.bytes[next_free_offset: next_free_offset + record_size] = record_bytes
     # update next_free_offset
-    block.bytes[9:13] = convert_uint_to_bytes(next_free_offset + record_size)
-    return True
+    block.bytes[5:9] = convert_uint_to_bytes(next_free_offset + record_size)
+    return next_free_offset + record_size
 
 def read_record_bytes(block, offset):
     # return record_bytes given data block id and offset
     # client must ensure the data is actually there
     if get_block_type(block) != "data":
         raise Exception("Can only read record from data block!")
-    _, block_id, _, _, record_size = get_data_block_header(block)
-    if (offset - 17) % record_size != 0:
-        raise Exception(f"offset must satisfy {record_size}x + 17")
+    _, block_id, _, record_size = get_data_block_header(block)
+    if (offset - 13) % record_size != 0:
+        raise Exception(f"offset must satisfy {record_size}x + 13")
     if (offset + record_size > len(block)):
         raise Exception("offset is too big")
     return block.bytes[offset: offset + record_size]
+
+def delete_record_bytes(block, offset):
+    # delete record_bytes at the specified offset
+    # we maintain the invariant that there are no gaps in block between records
+    if get_block_type(block) != "data":
+        raise Exception("Can only delete record from data block!")
+    _, block_id, next_free_offset, record_size = get_data_block_header(block)
+    if (offset - 13) % record_size != 0:
+        raise Exception(f"offset must satisfy {record_size}x + 13")
+    if (offset + record_size > len(block)):
+        raise Exception("offset is too big")
+    block.bytes[offset:] = block.bytes[offset + record_size:] + bytearray(record_size)
+    block.bytes[5:9] = convert_uint_to_bytes(next_free_offset - record_size)
 
 def set_ptrs_keys_bytes(block, ptrs_keys_bytes):
     # sets the data (keys and pointers) into index block (after the header)
@@ -167,7 +178,7 @@ def set_ptrs_keys_bytes(block, ptrs_keys_bytes):
     block.bytes[13:13+len(ptrs_keys_bytes)] = ptrs_keys_bytes
     # clear out the remainder
     block.bytes[13+len(ptrs_keys_bytes): len(block)] = bytearray(len(block) - (13 + len(ptrs_keys_bytes)))
-    num_keys = (len(ptrs_keys_bytes) - 4) // 8
+    num_keys = (len(ptrs_keys_bytes) - 8) // 21
     # set the number of keys
     block.bytes[5:9] = convert_uint_to_bytes(num_keys)
     return True
@@ -183,19 +194,20 @@ def deserialize_index_block(block):
     pointers = []
     keys = []
     for i in range(num_keys):
-        pointers.append(convert_bytes_to_uint(block.bytes[pos:pos+4]))
-        pos += 4
-        keys.append(convert_bytes_to_float(block.bytes[pos:pos+key_size]))
+        pointers.append((convert_bytes_to_uint(block.bytes[pos:pos+4]), convert_bytes_to_uint(block.bytes[pos+4:pos+8])))
+        pos += 8
+        keys.append(convert_bytes_to_string(block.bytes[pos:pos+key_size]))
         pos += key_size
-    pointers.append(convert_bytes_to_uint(block.bytes[pos:pos+4]))
-    pos += 4
+    pointers.append((convert_bytes_to_uint(block.bytes[pos:pos+4]), convert_bytes_to_uint(block.bytes[pos+4:pos+8])))
     return pointers, keys
 
 def serialize_ptrs_keys(pointers, keys):
-    # converts list[block_id] and list[key] into bytes, to be used with set_ptrs_keys_bytes(block, ptrs_keys_bytes)
+    # converts list[(block_id, offset)] and list[key] into bytes, to be used with set_ptrs_keys_bytes(block, ptrs_keys_bytes)
+    # recall block_id: 4 bytes, offset: 4 bytes, key: 13 bytes
     assert len(pointers) - len(keys) == 1
     res = bytearray()
     for i in range(len(keys)):
-        res += convert_uint_to_bytes(pointers[i]) + convert_float_to_bytes(keys[i])
-    res += convert_uint_to_bytes(pointers[-1])
+        res += convert_uint_to_bytes(pointers[i][0]) + convert_uint_to_bytes(pointers[i][1])
+        res += convert_string_to_bytes(keys[i], 13)
+    res += convert_uint_to_bytes(pointers[-1][0]) + convert_uint_to_bytes(pointers[-1][1])
     return res
