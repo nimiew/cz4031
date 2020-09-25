@@ -1,7 +1,9 @@
 from structures import Block, Disk
 from tree import Tree
 from utils import *
+
 import time
+import random
 
 def main():
     start = time.time()
@@ -18,11 +20,10 @@ def main():
     set_data_block_header(data_block, data_id)
     
     # insert the data
+    # random.shuffle(data)
     for i, record in enumerate(data):
         if i != 0 and i % 50000 == 0:
             print(f"{i} records inserted")
-            # print(f"tree height: {tree.get_height()}")
-            # print(f"tree num nodes: {tree.get_num_nodes()}")
         record_bytes = convert_record_to_bytes(record)
         # insert into data block
         inserted_at = insert_record_bytes(data_block, record_bytes)
@@ -39,41 +40,57 @@ def main():
         tree.insert((record[1], record[0]), (data_id, inserted_at))
     print(f"Approx Number of blocks written to {data_id}")
     end = time.time()
-    print(f"Second elapsed: {end-start}")
+    print(f"Seconds for insertion: {end-start}")
 
-    tree.validate()
+    start = time.time()
+    tree.save()
+    end = time.time()
+    print(f"Seconds for saving tree to disk: {end-start}")
+
+    # random.shuffle(data)
+    # for i, record in enumerate(data):
+    #     tree.delete(record[1])
+    # print(tree.get_height())
+    # print(tree.get_num_nodes())
+
+    # # tree.validate()
 
     # TODO: Experiments
     # experiment 3
+    start = time.time()
     blocks_offsets = tree.search(8.0)
     exp3 = [convert_bytes_to_record(read_record_bytes(Disk.read_block(block_id), offset)) for block_id, offset in blocks_offsets]
+    end = time.time()
+    print(f"Seconds for exp3: {end-start}")
     actual_exp3 = []
     for record in data:
         if record[1] == 8.0:
             actual_exp3.append(record)
     assert sorted(exp3) == sorted(actual_exp3)
-    tree.validate()
+    # tree.validate()
+    
 
     # experiment 4
+    start = time.time()
     blocks_offsets = tree.search_range(7.0, 9.0)
     exp4 = [convert_bytes_to_record(read_record_bytes(Disk.read_block(block_id), offset)) for block_id, offset in blocks_offsets]
+    end = time.time()
+    print(f"Seconds for exp4: {end-start}")
     actual_exp4 = [record for record in data if 7.0 <= record[1] <= 9.0]
     assert sorted(exp4) == sorted(actual_exp4)
-    tree.validate()
+    end = time.time()
+    # tree.validate()
 
     # experiment 5
+    start = time.time()
     tree.delete(7.0)
+    end = time.time()
+    print(f"Seconds for exp5: {end-start}")
     blocks_offsets = tree.search_range(None, None)
     records_remaining = [convert_bytes_to_record(read_record_bytes(Disk.read_block(block_id), offset)) for block_id, offset in blocks_offsets]
     actual_records_remaining = [record for record in data if record[1] != 7.0]
-    print(len(records_remaining))
-    print(len(actual_records_remaining))
-    # for x, y in zip(sorted(records_remaining), sorted(actual_records_remaining)):
-    #     print(x)
-    #     print(y)
-    #     print(x==y)
     assert sorted(records_remaining) == sorted(actual_records_remaining)
-    tree.validate()
+    # tree.validate()
 
 if __name__ == "__main__":
     main()

@@ -163,8 +163,6 @@ def delete_record_bytes(block, offset):
         raise Exception(f"offset must satisfy {record_size}x + 13")
     if (offset + record_size > len(block)):
         raise Exception("offset is too big")
-    # block.bytes[offset:] = block.bytes[offset + record_size:] + bytearray(record_size)
-    # block.bytes[5:9] = convert_uint_to_bytes(next_free_offset - record_size)
 
 def set_ptrs_keys_bytes(block, ptrs_keys_bytes):
     # sets the data (keys and pointers) into index block (after the header)
@@ -196,7 +194,6 @@ def deserialize_index_block(block):
         pointers.append((convert_bytes_to_uint(block.bytes[pos:pos+4]), convert_bytes_to_uint(block.bytes[pos+4:pos+8])))
         pos += 8
         keys.append((convert_bytes_to_float(block.bytes[pos:pos+4]), convert_bytes_to_string(block.bytes[pos+4: pos+14])))
-        assert key_size == 14
         pos += key_size
     pointers.append((convert_bytes_to_uint(block.bytes[pos:pos+4]), convert_bytes_to_uint(block.bytes[pos+4:pos+8])))
     return pointers, keys
