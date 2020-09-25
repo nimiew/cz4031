@@ -6,7 +6,7 @@ from utils import *
 # constants (bytes)
 RECORD_SIZE = 18
 BLOCK_SIZE = 100
-DISK_SIZE = 100 * 1024 * 1024
+DISK_SIZE = 200 * 1024 * 1024
 NUM_BLOCKS = DISK_SIZE // BLOCK_SIZE
 
 class Block:
@@ -29,32 +29,43 @@ class Disk:
         blocks.append(Block())
     next_free_idx = 1 # 0 is never used  
     free_queue = collections.deque()
+    non_full_data_queue = collections.deque()
 
     @classmethod
     def read_block(cls, idx):
-        if not 0 <= idx < NUM_BLOCKS:
-            raise Exception(f"Invalid block id. Address must be within [0, {NUM_BLOCKS-1}]")
+        if not 1 <= idx < NUM_BLOCKS:
+            raise Exception(f"Invalid block id. Address must be within [1, {NUM_BLOCKS-1}]")
         # changes to the block that is read are NOT reflected in Disk.blocks
         # client need to write the block back to the Disk
-        return copy.deepcopy(cls.blocks[idx])
+        # if idx == 253:
+        #     1/0
+        return cls.blocks[idx]
 
     @classmethod
     def write_block(cls, idx, block):
-        if not 0 <= idx < NUM_BLOCKS:
-            raise Exception(f"Invalid block id. Address must be within [0, {NUM_BLOCKS-1}]")
+        if not 1 <= idx < NUM_BLOCKS:
+            raise Exception(f"Invalid block id. Address must be within [1, {NUM_BLOCKS-1}]")
         cls.blocks[idx] = block
 
     @classmethod
     def get_next_free(cls):
+        # gets the id of the next free block (block is fully empty)
         if cls.free_queue:
-            v = cls.free_queue.popleft()
-            return v
+            return cls.free_queue.popleft()
         else:
             cls.next_free_idx += 1
             if cls.next_free_idx == NUM_BLOCKS:
                 raise Exception("Disk full")
             return cls.next_free_idx - 1
 
+    @classmethod
+    def get_non_full_data_block(cls):
+        # return block id of any existing data block that is not full
+        # if all allocated data blocks are full, return -1 (client should proceed to use get_next_free instead)
+        if cls.non_full_data_queue:
+            return cls.non_full_data_queue.popleft()
+        return -1
+        
     @classmethod
     def deallocate(cls, block_id):
         cls.free_queue.append(block_id)

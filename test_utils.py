@@ -94,17 +94,17 @@ class TestUtils(unittest.TestCase):
         test_block = Block()
         set_index_block_header(test_block, "root", 5, 9, 1)
         self.assertEqual(get_block_type(test_block), "root")
-        self.assertEqual(get_index_block_header(test_block), (1, 5, 9, 1, 13))
+        self.assertEqual(get_index_block_header(test_block), (1, 5, 9, 1, 14))
 
         test_block = Block()
         set_index_block_header(test_block, "non-leaf", 7, 45, 11)
         self.assertEqual(get_block_type(test_block), "non-leaf")
-        self.assertEqual(get_index_block_header(test_block), (2, 7, 45, 11, 13))
+        self.assertEqual(get_index_block_header(test_block), (2, 7, 45, 11, 14))
 
         test_block = Block()
         set_index_block_header(test_block, "leaf", 23, 75, 23)
         self.assertEqual(get_block_type(test_block), "leaf")
-        self.assertEqual(get_index_block_header(test_block), (3, 23, 75, 23, 13))
+        self.assertEqual(get_index_block_header(test_block), (3, 23, 75, 23, 14))
 
     def test_insert_and_read_record_bytes(self):
         test_block = Block()
@@ -144,13 +144,13 @@ class TestUtils(unittest.TestCase):
         
         # note: pointer is (block_id, offset)
         pointers = [(4, 0), (5, 1), (6, 2), (7, 3)]
-        keys = ["5.6tt0000001", "6.6tt0000001", "7.6tt0000001"]
+        keys = [(5.6, "tt0000001"), (6.6, "tt0000001"), (7.6, "tt0000001")]
         keys_pointers_bytes = serialize_ptrs_keys(pointers, keys)
         self.assertTrue(set_ptrs_keys_bytes(test_block, keys_pointers_bytes))
         self.assertEqual(deserialize_index_block(test_block), (pointers, keys))
 
         pointers = [(4, 0), (5, 1)]
-        keys = ["7.6tt0000001"]
+        keys = [(7.6, "tt0000001")]
         keys_pointers_bytes = serialize_ptrs_keys(pointers, keys)
         set_ptrs_keys_bytes(test_block, keys_pointers_bytes)
         self.assertEqual(deserialize_index_block(test_block), (pointers, keys))
