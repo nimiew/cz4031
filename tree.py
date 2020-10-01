@@ -1,7 +1,8 @@
 from utils import *
 from structures import *
+from tracker import Tracker
 
-MAX_KEYS = (BLOCK_SIZE - 25) // 2
+MAX_KEYS = (BLOCK_SIZE - 25) // 22
 
 class Node:
     def __init__(self, max_keys=MAX_KEYS): # max_keys = (len(block) - 25) // 22
@@ -107,6 +108,7 @@ class Node:
                 right.pointers[0].parent = right
 
     def merge_with_right(self, right):
+        Tracker.increment_count("merge")
         self.keys.append(self.remove_from_parent_next_pointer_and_key())
         for i in range(len(right.pointers)):
             self.pointers.append(right.pointers[i])
@@ -116,6 +118,7 @@ class Node:
             self.keys.append(right.keys[i])
 
     def merge_with_left(self, left):
+        Tracker.increment_count("merge")
         self.keys.insert(0, self.remove_from_parent_prev_pointer_and_key())
         while left.pointers:
             self.pointers.insert(0, left.pointers.pop())
@@ -140,6 +143,7 @@ class Node:
 
     def leaf_merge(self, right): # seems like its symmetric - need further test
         # print("leaf_merge")
+        Tracker.increment_count("merge")
         self.keys.extend(right.keys)
         self.pointers.pop()
         self.pointers.extend(right.pointers)
@@ -367,6 +371,7 @@ class Node:
         If not found, i.e. key is smaller than all keys, return None
         """
         if self.leaf:
+            Tracker.add_to_set("leaf", self)
             for i in range(len(self.keys)):
                 if self.keys[i] >= key:
                     return self, i
@@ -377,6 +382,7 @@ class Node:
             # because self.pointers[-1].keys[0] >= some LB > key
             return self.pointers[-1], 0
         else:
+            Tracker.add_to_set("non-leaf", self)
             # find the subtree to recursively call on
             for i in range(len(self.keys)):
                 if key < self.keys[i]:
@@ -425,9 +431,13 @@ class Node:
             if node.pointers[-1] == None:
                 return res
             node = node.pointers[-1]
+            Tracker.add_to_set("leaf", node)
             pos = 0
         # this return is needed if the res includes the rightmost leaf node
         return res
+
+    def get_child_ids(self):
+        return [child.block_id for child in self.pointers] if not self.leaf else []
 
 class Tree:
     def __init__(self):

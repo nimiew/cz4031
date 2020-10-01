@@ -164,6 +164,15 @@ def delete_record_bytes(block, offset):
     if (offset + record_size > len(block)):
         raise Exception("offset is too big")
 
+def read_all_records_from_data_block(block):
+    _, _, next_free_offset, record_size = get_data_block_header(block)
+    cur_offset = 13
+    records = []
+    while cur_offset != next_free_offset:
+        records.append(convert_bytes_to_record(read_record_bytes(block, cur_offset)))
+        cur_offset += record_size
+    return records
+
 def set_ptrs_keys_bytes(block, ptrs_keys_bytes):
     # sets the data (keys and pointers) into index block (after the header)
     # return False if ptrs_keys_bytes is too large and setting is not done

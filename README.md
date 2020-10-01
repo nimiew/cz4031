@@ -67,7 +67,7 @@ Total 18 bytes for a record
     - Key size for our case is 13 as we are using str(average_rating) + tconst as key
   - Data
     - 14n bytes for keys (each key is (averageRating, tconst) tuple) + 8(n+1) bytes for pointers (pointer is block_id + offset)
-    - Each index block can hold at most (block_size - 17) // 8 keys
+    - Each index block can hold at most (block_size - 25) // 22 keys
       - block_size - 17 >= 14n + 8(n+1)
       - block_size - 25 >= 22n
       - (block_size - 25) / 22 >= n
