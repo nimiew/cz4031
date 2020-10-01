@@ -11,6 +11,7 @@ def main():
 
     # read in the data as a list[list[tconst, average_rating, num_votes]]
     data = parse_data()
+    data.sort(key=lambda record: (record[1], record[0]))
 
     # init tree
     tree = Tree()
