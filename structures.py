@@ -5,7 +5,7 @@ from utils import *
 
 # constants (bytes)
 RECORD_SIZE = 18
-BLOCK_SIZE = 100
+BLOCK_SIZE = 500
 DISK_SIZE = 200 * 1024 * 1024
 NUM_BLOCKS = DISK_SIZE // BLOCK_SIZE
 

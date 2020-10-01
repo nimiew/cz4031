@@ -36,7 +36,6 @@ Analysis of data.tsv (if interested, look at data_analysis.py and run `python da
 - Total number of records is 1070318
 - number of decimal places for averageRating < 2 (so decimal places can be represent with 2 bytes (up to 65536))
 - Means we can use fixed format with fixed length for record (10 bytes for tconst, 4 for averageRating and 4 for numVotes)
-- Fact: There are no records who start with 0 at position 0. This means we can use value of 0 to check if there is a record at a block offset
 
 ## Record format
 
@@ -63,15 +62,15 @@ Total 18 bytes for a record
     - 1 byte (for denoting if block is data/index_root/index_non_leaf/index_leaf)
     - 4 bytes (for holding block id)
     - 4 bytes (for holding parent block id)
-    - 4 bytes (for holding key size)
     - 4 bytes (for holding number of keys currently in index_block)
+    - 4 bytes (for holding key size)
     - Key size for our case is 13 as we are using str(average_rating) + tconst as key
   - Data
-    - 13n bytes (keys) + 8(n+1) bytes (pointers) (pointer has block_id + offset)
+    - 14n bytes for keys (each key is (averageRating, tconst) tuple) + 8(n+1) bytes for pointers (pointer is block_id + offset)
     - Each index block can hold at most (block_size - 17) // 8 keys
-      - block_size - 17 >= 13n + 8(n+1)
-      - block_size - 25 >= 21n
-      - (block_size - 25) / 21 >= n
+      - block_size - 17 >= 14n + 8(n+1)
+      - block_size - 25 >= 22n
+      - (block_size - 25) / 22 >= n
 
 ## Implementation
 
@@ -87,10 +86,8 @@ Total 18 bytes for a record
   - We can do this as I checked that before the dot got at most 2 digits and after the dot got at most 2 digits (see data_analysis.py)
   - Also all are positive
   - e.g. 5.3 <=> [5, 0, 3, 0], 11.42 <=> [11, 0, 42, 0]
-- By default, block id 0 refers to root index block
 - Index blocks have pointers that point to index blocks. All index block pointers point to other index blocks except leaf index blocks which point to data blocks
 - Data blocks contain records
-- The conversion between 0 and None is the responsibility of class, not serializer/deserializer
 
 ## Tests
 

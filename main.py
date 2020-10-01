@@ -67,7 +67,7 @@ def main():
         if record[1] == 8.0:
             actual_exp3.append(record)
     assert sorted(exp3) == sorted(actual_exp3)
-    # tree.validate()
+    tree.validate()
     
 
     # experiment 4
@@ -79,7 +79,7 @@ def main():
     actual_exp4 = [record for record in data if 7.0 <= record[1] <= 9.0]
     assert sorted(exp4) == sorted(actual_exp4)
     end = time.time()
-    # tree.validate()
+    tree.validate()
 
     # experiment 5
     start = time.time()
@@ -90,7 +90,7 @@ def main():
     records_remaining = [convert_bytes_to_record(read_record_bytes(Disk.read_block(block_id), offset)) for block_id, offset in blocks_offsets]
     actual_records_remaining = [record for record in data if record[1] != 7.0]
     assert sorted(records_remaining) == sorted(actual_records_remaining)
-    # tree.validate()
+    tree.validate()
 
 if __name__ == "__main__":
     main()

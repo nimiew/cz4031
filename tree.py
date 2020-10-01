@@ -1,8 +1,10 @@
 from utils import *
 from structures import *
 
+MAX_KEYS = (BLOCK_SIZE - 25) // 2
+
 class Node:
-    def __init__(self, max_keys=3): # max_keys = (len(block) - 25) // 22
+    def __init__(self, max_keys=MAX_KEYS): # max_keys = (len(block) - 25) // 22
         self.block_id = Disk.get_next_free()
         self.parent = None
         self.leaf = True
