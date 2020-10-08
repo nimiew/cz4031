@@ -1,5 +1,5 @@
 def parse_data(path="data.tsv"):
-    with open("data.tsv") as f:
+    with open(path) as f:
         lines = f.readlines()
     data = [line.split() for i, line in enumerate(lines) if i != 0]
     for record in data:
