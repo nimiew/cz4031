@@ -158,11 +158,12 @@ def delete_record_bytes(block, offset):
     # we maintain the invariant that there are no gaps in block between records
     if get_block_type(block) != "data":
         raise Exception("Can only delete record from data block!")
-    _, block_id, next_free_offset, record_size = get_data_block_header(block)
+    _, _, _, record_size = get_data_block_header(block)
     if (offset - 13) % record_size != 0:
         raise Exception(f"offset must satisfy {record_size}x + 13")
     if (offset + record_size > len(block)):
         raise Exception("offset is too big")
+    block.bytes[offset: offset+record_size] = bytearray(18)
 
 def read_all_records_from_data_block(block):
     _, _, next_free_offset, record_size = get_data_block_header(block)

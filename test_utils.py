@@ -132,10 +132,10 @@ class TestUtils(unittest.TestCase):
         ]
         for record in records:
             record_bytes = convert_record_to_bytes(record)
-            self.assertTrue(insert_record_bytes(test_block, record_bytes))
+            insert_record_bytes(test_block, record_bytes)
         delete_record_bytes(test_block, 31) # delete second record
         self.assertEqual(convert_bytes_to_record(read_record_bytes(test_block, 13)), records[0])
-        self.assertEqual(convert_bytes_to_record(read_record_bytes(test_block, 31)), records[2])
+        self.assertEqual(convert_bytes_to_record(read_record_bytes(test_block, 31)), ["", 0.0, 0])
 
     def test_serialize_and_deserialize_index_block(self):
         test_block = Block()

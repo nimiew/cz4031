@@ -25,7 +25,6 @@ def main():
     num_data_blocks = 0
     
     # insert the data
-    # random.shuffle(data)
     for i, record in enumerate(data):
         if i != 0 and i % 50000 == 0:
             print(f"{i} records inserted")
