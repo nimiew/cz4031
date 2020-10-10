@@ -68,21 +68,42 @@ def main():
     # experiment 3
     Tracker.reset_all()
     blocks_offsets = tree.search(8.0)
-    print(f"The number of index blocks the process accesses: {len(Tracker.track_set['leaf']) + len(Tracker.track_set['non-leaf'])}")
+
+    # Index Nodes
+    print("\nExperiment 3: Retrieving tconst of movies with averageRating == 8...")
+    print("\n=====INDEX NODES=====")
+    print(f"The number of index nodes the process accessed: \n  {len(Tracker.track_set['leaf']) + len(Tracker.track_set['non-leaf'])} "
+          f"({len(Tracker.track_set['non-leaf'])} Non-leaf nodes, {len(Tracker.track_set['leaf'])} leaf nodes)\n")
     print("The content of the non-leaf index nodes:")
     for index_node in Tracker.track_set["non-leaf"]:
-        print(f"keys: {index_node.keys}, pointers: {index_node.get_child_ids()}")
+        if index_node.parent:
+            print(f"node_id = {index_node.block_id} with parent_node_id = {index_node.parent.block_id}")
+        else:
+            print(f"Root Node's node_id = {index_node.block_id}")
+        print(f"keys: {index_node.keys}, pointers: {index_node.get_child_ids()}\n")
     print("The content of the leaf index nodes:")
+    count = 0
     for index_node in Tracker.track_set["leaf"]: # might just give first 5 in report
-        print(f"keys: {index_node.keys}, pointers: {index_node.get_child_ids()}")
+        print(f"node_id = {index_node.block_id} with parent_block_id = {index_node.parent.block_id}")
+        print(f"keys: {index_node.keys}, pointers: {[tup[0] for tup in index_node.pointers if type(tup) is tuple]}\n")
+        count += 1
+        if (count == 5):
+            break
 
+    print("=====DATA BLOCKS=====")
+    # Data Blocks
     unique_data_block_ids = set(block_id for block_id, _ in blocks_offsets) # since pointers can point to same data block
-    print(f"The number of data blocks the process accesses: {len(unique_data_block_ids)}")
+    print(f"The number of data blocks the process accessed: \n  {len(unique_data_block_ids)}\n")
     print("The content of the data blocks:")
+    count = 0
     for data_block_id in unique_data_block_ids: # might just give first 5 in report
         print(f"Records for data block with id {data_block_id}:")
-        print(read_all_records_from_data_block(Disk.read_block(data_block_id)))
+        print(f"{read_all_records_from_data_block(Disk.read_block(data_block_id))}\n")
+        count += 1
+        if (count == 5):
+            break
 
+    # tconst of movies with the averageRating == 8.0
     selected_records = [convert_bytes_to_record(read_record_bytes(Disk.read_block(block_id), offset)) for block_id, offset in blocks_offsets]
     print(f"The attribute 'tconst' of the records that are returned are: {[sr[0] for sr in selected_records]}")
     # the part below only for validation
