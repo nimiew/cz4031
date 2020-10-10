@@ -1,4 +1,3 @@
-import copy # using deepcopy to enforce client to use write_block
 import collections
 
 from utils import *
@@ -35,12 +34,10 @@ class Disk:
     def read_block(cls, idx):
         if not 1 <= idx < NUM_BLOCKS:
             raise Exception(f"Invalid block id. Address must be within [1, {NUM_BLOCKS-1}]")
-        # changes to the block that is read are NOT reflected in Disk.blocks
-        # client need to write the block back to the Disk
-        # if idx == 253:
-        #     1/0
         return cls.blocks[idx]
 
+    # changes to the block that is read are actually reflected in Disk.blocks without explicitly using write_block
+    # but should use write_block to simulate disk
     @classmethod
     def write_block(cls, idx, block):
         if not 1 <= idx < NUM_BLOCKS:

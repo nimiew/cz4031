@@ -98,7 +98,7 @@ def get_data_block_header(block):
         convert_bytes_to_uint(block.bytes[9:13]),
     )
 
-# bytes reserved for index block header = 13
+# bytes reserved for index block header = 17
 def set_index_block_header(block, index_type, block_id, parent_block_id, num_keys=0, key_size=14):
     if index_type == "root":
         block.bytes[0] = 1
@@ -124,8 +124,8 @@ def get_index_block_header(block):
 
 def insert_record_bytes(block, record_bytes):
     # insert the bytes of record into the first free location in data block
-    # return False if block is full and insertion is not done
-    # return True if insertion is successful
+    # return -1 if block is full and insertion is not done
+    # return next_free_offset if insertion is successful
     if get_block_type(block) != "data":
         raise Exception("Can only insert record into data block!")
     _, block_id, next_free_offset, record_size = get_data_block_header(block)
@@ -146,7 +146,7 @@ def read_record_bytes(block, offset):
     # client must ensure the data is actually there
     if get_block_type(block) != "data":
         raise Exception("Can only read record from data block!")
-    _, block_id, _, record_size = get_data_block_header(block)
+    _, _, _, record_size = get_data_block_header(block)
     if (offset - 13) % record_size != 0:
         raise Exception(f"offset must satisfy {record_size}x + 13")
     if (offset + record_size > len(block)):
@@ -155,7 +155,6 @@ def read_record_bytes(block, offset):
 
 def delete_record_bytes(block, offset):
     # delete record_bytes at the specified offset
-    # we maintain the invariant that there are no gaps in block between records
     if get_block_type(block) != "data":
         raise Exception("Can only delete record from data block!")
     _, _, _, record_size = get_data_block_header(block)
@@ -164,6 +163,7 @@ def delete_record_bytes(block, offset):
     if (offset + record_size > len(block)):
         raise Exception("offset is too big")
     block.bytes[offset: offset+record_size] = bytearray(18)
+    
 
 def read_all_records_from_data_block(block):
     _, _, next_free_offset, record_size = get_data_block_header(block)
