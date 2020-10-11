@@ -146,38 +146,32 @@ def main():
     blocks_offsets = tree.search(8.0)
     generate_select_query_statistic(Tracker.track_set['leaf'], Tracker.track_set['non-leaf'], blocks_offsets, file_settings)
 
-    #TODO: Check with Jun Liang whether the validation below is needed
-
-    # selected_records = [convert_bytes_to_record(read_record_bytes(Disk.read_block(block_id), offset)) for
-    #                     block_id, offset in blocks_offsets]
-    # # the part below only for validation
-    # actual_records = []
-    # for record in data:
-    #     if record[1] == 8.0:
-    #         actual_records.append(record)
-    # assert sorted(selected_records) == sorted(actual_records)
-    # # tree.validate()
+    selected_records = [convert_bytes_to_record(read_record_bytes(Disk.read_block(block_id), offset)) for
+                        block_id, offset in blocks_offsets]
+    # the part below only for validation
+    actual_records = []
+    for record in data:
+        if record[1] == 8.0:
+            actual_records.append(record)
+    assert sorted(selected_records) == sorted(actual_records)
+    # tree.validate()
 
     # experiment 4
     print("\nExperiment 4: Retrieving tconst of movies with 7 <= averageRating <= 9...\n")
-    isSave = True
     file_settings = ["experiment_4_index_nodes.txt", "experiment_4_data_blocks.txt",
                      "experiment_4_tconst_result.csv"]
     Tracker.reset_all()
     blocks_offsets = tree.search_range(7.0, 9.0)
     generate_select_query_statistic(Tracker.track_set['leaf'], Tracker.track_set['non-leaf'], blocks_offsets, file_settings)
 
-    #TODO: Check with Jun Liang whether the validation below is needed
-
-    # selected_records = [convert_bytes_to_record(read_record_bytes(Disk.read_block(block_id), offset)) for block_id, offset in blocks_offsets]
-    # print(f"The attribute 'tconst' of the records that are returned are: {[sr[0] for sr in selected_records]}")
-    # # the part below only for validation
-    # actual_records = []
-    # for record in data:
-    #     if 7.0 <= record[1] <= 9.0:
-    #         actual_records.append(record)
-    # assert sorted(selected_records) == sorted(actual_records)
-    # # tree.validate()
+    selected_records = [convert_bytes_to_record(read_record_bytes(Disk.read_block(block_id), offset)) for block_id, offset in blocks_offsets]
+    # the part below only for validation
+    actual_records = []
+    for record in data:
+        if 7.0 <= record[1] <= 9.0:
+            actual_records.append(record)
+    assert sorted(selected_records) == sorted(actual_records)
+    # tree.validate()
 
     # experiment 5
     Tracker.reset_all()
