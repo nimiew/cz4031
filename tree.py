@@ -437,7 +437,17 @@ class Node:
         return res
 
     def get_child_ids(self):
-        return [child.block_id for child in self.pointers] if not self.leaf else []
+        if self.leaf:
+            result = []
+            for child in self.pointers:
+                if type(child) is tuple:
+                    # Data Block pointer in format of (Block_id of data block, offset of record)
+                    result.append(child)
+                else:
+                    # Node pointer
+                    result.append(child.block_id)
+            return result
+        return [child.block_id for child in self.pointers]
 
 class Tree:
     def __init__(self):
