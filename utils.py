@@ -1,3 +1,4 @@
+import struct
 def parse_data(path="data.tsv"):
     with open(path) as f:
         lines = f.readlines()
@@ -31,25 +32,15 @@ def convert_bytes_to_string(bytes_):
 
 def convert_float_to_bytes(float_):
     # float => bytearray
-    if float_ < 1.0:
-        raise Exception(f"float value must be >= 1.0")
-    before_dot, after_dot = str(float_).split(".")
-    before_dot, after_dot = int(before_dot), int(after_dot)
-    if before_dot > 65535:
-        raise Exception(f"before_dot > 65535")
-    if after_dot > 65535:
-        raise Exception(f"after_dot > 65535")
-    before_dot = before_dot.to_bytes(2, byteorder='little', signed=False)
-    after_dot = after_dot.to_bytes(2, byteorder='little', signed=False)
-    res = bytearray(before_dot + after_dot)
+    #IEEE 754 binary32 format 
+    res = bytearray(struct.pack("f", float_))
     assert len(res) == 4
-    return res # concat
+    return res 
 
 def convert_bytes_to_float(bytes_):
     # bytearray => float
-    before_dot = str(int.from_bytes(bytes_[:2], byteorder='little', signed=False))
-    after_dot = str(int.from_bytes(bytes_[2:], byteorder='little', signed=False))
-    return float(before_dot + "." + after_dot)
+    res = struct.unpack("f",bytes_)
+    return round(res[0],1)
 
 def convert_uint_to_bytes(number):
     # int => bytearray

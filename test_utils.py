@@ -1,5 +1,5 @@
 import unittest
-
+import struct
 from structures import Block, Disk
 from utils import *
 
@@ -37,39 +37,10 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(str(e.exception), "byte value: 20320 invalid")
 
     def test_float_conversion(self):
-        f = 1.0
+        f = 1.1
         bytes_ = convert_float_to_bytes(f)
         self.assertEqual(len(bytes_), 4)
-        self.assertEqual(convert_bytes_to_uint(bytes_[:2]), 1)
-        self.assertEqual(convert_bytes_to_uint(bytes_[2:]), 0)
-        self.assertEqual(convert_bytes_to_float(bytes_), 1.0)
-
-        f = 65535.65535
-        bytes_ = convert_float_to_bytes(f)
-        self.assertEqual(len(bytes_), 4)
-        self.assertEqual(convert_bytes_to_uint(bytes_[:2]), 65535)
-        self.assertEqual(convert_bytes_to_uint(bytes_[2:]), 65535)
-        self.assertEqual(convert_bytes_to_float(bytes_), 65535.65535)
-
-        f = 0.1
-        with self.assertRaises(Exception) as e:
-            convert_float_to_bytes(f)
-        self.assertEqual(str(e.exception), "float value must be >= 1.0")
-        
-        f = -23.1
-        with self.assertRaises(Exception) as e:
-            convert_float_to_bytes(f)
-        self.assertEqual(str(e.exception), "float value must be >= 1.0")
-
-        f = 65536.0
-        with self.assertRaises(Exception) as e:
-            convert_float_to_bytes(f)
-        self.assertEqual(str(e.exception), "before_dot > 65535")
-        
-        f = 1.65536
-        with self.assertRaises(Exception) as e:
-            convert_float_to_bytes(f)
-        self.assertEqual(str(e.exception), "after_dot > 65535")
+        self.assertEqual(convert_bytes_to_float(bytes_), 1.1)
     
     def test_record_conversion(self):
         # test with dataset first 10k rows
