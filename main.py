@@ -116,7 +116,6 @@ def main():
         print(f'tconst of {len(selected_records)} movies saved to "{result_file}"\n')
 
     # experiment 1
-    #TODO Need to include the calculation for the total size of database
     print("Experiment 1: Storing the data on the disk...\n")
     block_count = num_data_blocks + 1
     node_count = tree.get_num_nodes()
