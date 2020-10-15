@@ -5,4 +5,5 @@ __pycache__
 *.csv
 *.log
 *.pdf
-
+!Project 1.pdf
+.vscode
