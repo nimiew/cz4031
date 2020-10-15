@@ -4,3 +4,5 @@ __pycache__
 *.txt
 *.csv
 *.log
+*.pdf
+
