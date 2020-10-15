@@ -1,3 +1,6 @@
 *.ipynb
 .cph
 __pycache__
+*.txt
+*.csv
+*.log

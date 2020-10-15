@@ -3,9 +3,10 @@ import collections
 from utils import *
 
 # constants (bytes)
-BLOCK_SIZE = 500
+BLOCK_SIZE = 100
 DISK_SIZE = 200 * 1024 * 1024
 NUM_BLOCKS = DISK_SIZE // BLOCK_SIZE
+
 
 class Block:
     def __init__(self, block_size=BLOCK_SIZE):
@@ -20,19 +21,22 @@ class Block:
     def __eq__(self, other):
         return self.bytes == other.bytes
 
+
 class Disk:
-    # use this class as a static class. Don't instantiate. All methods are class methods.  
+    # use this class as a static class. Don't instantiate. All methods are class methods.
     blocks = []
     for _ in range(NUM_BLOCKS):
         blocks.append(Block())
-    next_free_idx = 1 # 0 is never used to prevent getting mixed with None
+    next_free_idx = 1  # 0 is never used to prevent getting mixed with None
     free_queue = collections.deque()
     non_full_data_queue = collections.deque()
 
     @classmethod
     def read_block(cls, block_id):
         if not 1 <= block_id < NUM_BLOCKS:
-            raise Exception(f"Invalid block id. Address must be within [1, {NUM_BLOCKS-1}]")
+            raise Exception(
+                f"Invalid block id. Address must be within [1, {NUM_BLOCKS-1}]"
+            )
         return cls.blocks[block_id]
 
     # changes to the block that is read are actually reflected in Disk.blocks without explicitly using write_block
@@ -40,7 +44,9 @@ class Disk:
     @classmethod
     def write_block(cls, block_id, block):
         if not 1 <= block_id < NUM_BLOCKS:
-            raise Exception(f"Invalid block id. Address must be within [1, {NUM_BLOCKS-1}]")
+            raise Exception(
+                f"Invalid block id. Address must be within [1, {NUM_BLOCKS-1}]"
+            )
         cls.blocks[block_id] = block
 
     @classmethod
@@ -61,7 +67,7 @@ class Disk:
         if cls.non_full_data_queue:
             return cls.non_full_data_queue.popleft()
         return -1
-        
+
     @classmethod
     def deallocate(cls, block_id):
         cls.free_queue.append(block_id)
