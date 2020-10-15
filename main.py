@@ -1,4 +1,4 @@
-from structures import Block, Disk
+from structures import Block, Disk, BLOCK_SIZE
 from tree import Tree
 from tracker import Tracker
 from utils import *
@@ -116,10 +116,12 @@ def main():
         print(f'tconst of {len(selected_records)} movies saved to "{result_file}"\n')
 
     # experiment 1
-    #TODO Need to include the calculation for the total size of database
     print("Experiment 1: Storing the data on the disk...\n")
-    print(f"Total number of data blocks: {num_data_blocks + 1}") # num_data_blocks were fully filled, last is partially filled
-    print(f"Total number of index blocks: {tree.get_num_nodes()}")
+    block_count = num_data_blocks + 1
+    node_count = tree.get_num_nodes()
+    print(f"Total number of data blocks: {block_count}") # num_data_blocks were fully filled, last is partially filled
+    print(f"Total number of index nodes: {node_count}")
+    print(f"Total size of database: ({block_count} + {node_count}) * {BLOCK_SIZE}B = {(block_count + node_count)*BLOCK_SIZE}B\n")
 
     # experiment 2
     print("Experiment 2: Building a B+ tree on the attribute 'averageRating'...\n")
@@ -139,8 +141,8 @@ def main():
 
     # experiment 3
     print("Experiment 3: Retrieving tconst of movies with averageRating == 8...\n")
-    file_settings = ["experiment_3_index_nodes.txt", "experiment_3_data_blocks.txt",
-                     "experiment_3_tconst_result.csv"]
+    file_settings = [f"{BLOCK_SIZE}B_experiment_3_index_nodes.txt", f"{BLOCK_SIZE}B_experiment_3_data_blocks.txt",
+                     f"{BLOCK_SIZE}B_experiment_3_tconst_result.csv"]
 
     Tracker.reset_all()
     blocks_offsets = tree.search(8.0)
@@ -158,8 +160,8 @@ def main():
 
     # experiment 4
     print("\nExperiment 4: Retrieving tconst of movies with 7 <= averageRating <= 9...\n")
-    file_settings = ["experiment_4_index_nodes.txt", "experiment_4_data_blocks.txt",
-                     "experiment_4_tconst_result.csv"]
+    file_settings = [f"{BLOCK_SIZE}B_experiment_4_index_nodes.txt", f"{BLOCK_SIZE}B_experiment_4_data_blocks.txt",
+                     f"{BLOCK_SIZE}B_experiment_4_tconst_result.csv"]
     Tracker.reset_all()
     blocks_offsets = tree.search_range(7.0, 9.0)
     generate_select_query_statistic(Tracker.track_set['leaf'], Tracker.track_set['non-leaf'], blocks_offsets, file_settings)
