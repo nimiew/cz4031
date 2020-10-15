@@ -72,7 +72,7 @@ def convert_bytes_to_record(bytes_):
 def get_block_type(block):
     if block.bytes[0] == 0:
         return "data"
-    elif block.bytes[0] == 1:
+    elif block.bytes[0] == 1: # deprecated
         return "root"
     elif block.bytes[0] == 2:
         return "non-leaf"
@@ -142,7 +142,7 @@ def insert_record_bytes(block, record_bytes):
     return next_free_offset
 
 def read_record_bytes(block, offset):
-    # return record_bytes given data block id and offset
+    # return record_bytes given data block and offset
     # client must ensure the data is actually there
     if get_block_type(block) != "data":
         raise Exception("Can only read record from data block!")
@@ -163,7 +163,6 @@ def delete_record_bytes(block, offset):
     if (offset + record_size > len(block)):
         raise Exception("offset is too big")
     block.bytes[offset: offset+record_size] = bytearray(18)
-    
 
 def read_all_records_from_data_block(block):
     _, _, next_free_offset, record_size = get_data_block_header(block)
@@ -176,12 +175,11 @@ def read_all_records_from_data_block(block):
 
 def set_ptrs_keys_bytes(block, ptrs_keys_bytes):
     # sets the data (keys and pointers) into index block (after the header)
-    # return False if ptrs_keys_bytes is too large and setting is not done
     # return True if setting is successful
     if get_block_type(block) == "data":
         raise Exception("Can only set key_pointers_bytes for index block!")
     if 17 + len(ptrs_keys_bytes) > len(block):
-        return False
+        raise Exception("ptrs_keys_bytes is too large!")
     block.bytes[17:17+len(ptrs_keys_bytes)] = ptrs_keys_bytes
     # clear out the remainder
     block.bytes[17+len(ptrs_keys_bytes): len(block)] = bytearray(len(block) - (17 + len(ptrs_keys_bytes)))
@@ -192,7 +190,7 @@ def set_ptrs_keys_bytes(block, ptrs_keys_bytes):
 
 def deserialize_index_block(block):
     # convert the data (keys and pointers) in a index block
-    # returns list[block_id], list[key]
+    # returns list[tuple(block_id, offset)], list[key]
     if get_block_type(block) == "data":
         raise Exception("Can only deserialize index block!")
     index_type, _, _, num_keys, key_size = get_index_block_header(block)

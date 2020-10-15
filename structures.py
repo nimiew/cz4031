@@ -3,7 +3,6 @@ import collections
 from utils import *
 
 # constants (bytes)
-RECORD_SIZE = 18
 BLOCK_SIZE = 500
 DISK_SIZE = 200 * 1024 * 1024
 NUM_BLOCKS = DISK_SIZE // BLOCK_SIZE
@@ -31,18 +30,18 @@ class Disk:
     non_full_data_queue = collections.deque()
 
     @classmethod
-    def read_block(cls, idx):
-        if not 1 <= idx < NUM_BLOCKS:
+    def read_block(cls, block_id):
+        if not 1 <= block_id < NUM_BLOCKS:
             raise Exception(f"Invalid block id. Address must be within [1, {NUM_BLOCKS-1}]")
-        return cls.blocks[idx]
+        return cls.blocks[block_id]
 
     # changes to the block that is read are actually reflected in Disk.blocks without explicitly using write_block
     # but should use write_block to simulate disk
     @classmethod
-    def write_block(cls, idx, block):
-        if not 1 <= idx < NUM_BLOCKS:
+    def write_block(cls, block_id, block):
+        if not 1 <= block_id < NUM_BLOCKS:
             raise Exception(f"Invalid block id. Address must be within [1, {NUM_BLOCKS-1}]")
-        cls.blocks[idx] = block
+        cls.blocks[block_id] = block
 
     @classmethod
     def get_next_free(cls):

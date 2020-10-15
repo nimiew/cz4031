@@ -165,7 +165,6 @@ class Node:
                     assert get_block_type(data_block) == "data"
                     delete_record_bytes(data_block, offset)
                     Disk.write_block(data_block_id, data_block)
-                    # TODO: add to queue
                     next_largest = self.keys[i] if i < len(self.keys) else None
                     break
             if next_largest == None:
@@ -405,9 +404,6 @@ class Node:
     def search_range(self, lower, upper, return_key=False):
         """
         Returns a list of all values whose keys are in the range [lower, upper] inclusive
-        If lower is None, it is treated as no lower bound
-        If upper is None, it is trated as no upper bound
-        If both are None, return all values
         """
         if lower > upper:
             return []
