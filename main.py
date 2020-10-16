@@ -94,7 +94,7 @@ def main():
                 f"{count}. node_id = {index_node.block_id} with parent_block_id = {index_node.parent.block_id}\n")
             ind_file.write(get_ptr_key_sequence(index_node))
         print(f"The number of index nodes the process accessed: {len(leaf_nodes_dict) + len(non_leaf_nodes_dict)} "
-              f"{len(non_leaf_nodes_dict)} Non-leaf nodes, {len(leaf_nodes_dict)} leaf nodes)")
+              f"({len(non_leaf_nodes_dict)} Non-leaf nodes, {len(leaf_nodes_dict)} leaf nodes)")
         print(f'Content of index nodes accessed saved to "{index_file}"\n')
 
         # data blocks
